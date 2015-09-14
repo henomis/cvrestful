@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Simone Vellei - RESTFUL Curriculum Vitae</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Bootstrap -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/cv.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+
+    <div id="notify" class="alert alert-success"></div>
+    <div id="howthis-info">
+	<div id="howthis-content"></div>
+      	<button class="btn btn-large btn-success" id="howthis-close">Close</button>
+    </div>
+    <div class="container">
+
+
+      <!-- Jumbotron -->
+      <div class="bigtitle">
+        <h1>Simone Vellei</h1>
+        <p class="lead">Hi folks! This is my <strong>RESTFUL Curriculum Vitae</strong>. It's built using various software, protocols, and tools: <a href="www.json.org">JSON</a>,<a href="http://www.jquery.org">jQuery</a>, <a href="http://getbootstrap.com/">Twitter Bootstrap</a>, <a href="http://bellard.org/tcc/">TinyC</a>, <a href="https://github.com/cesanta/fossa">Fossa</a>, <a href="#">HTML5</a>, <a href="#">CSS3</a>, <a href="#">WebSocket</a>, <a href="#">Ajax</a>, <a href="#">C</a>, <a href="#">BASH</a>, <a href='http://www.git.org'>GIT</a> and many others. This web service provides a funny way to read my skills and my experiences. Are you interested?</p>
+        <button class="btn btn-large btn-success" id="start">Get started today</button>
+      </div>
+      
+      <button class="btn btn-large btn-info" id="howthis">How it's made?</button>
+      <div class="api" id="person"></div>
+      <div class="api" id="profession"></div>
+      <div class="api" id="education"></div>
+
+	<!-- API TABLE -->
+      <table class="table table-striped api-table">
+	<tr id="t-person">
+		<td>
+			<span class="label label-info">GET</span> <code>/api/person</code>
+		</td>
+		<td class="description">
+			Me, Myself and I.
+		</td>
+		<td>
+			<button class="btn btn-success" id="btn-person">Run!</button>
+		</td>
+	</tr>
+	<tr id="t-profession">
+		<td>
+			<span class="label label-info">GET</span> <code>/api/profession</code>
+		</td>
+		<td class="description">
+			My current job.
+		</td>
+		<td>
+			<button class="btn btn-success" id="btn-profession">Run!</button>
+		</td>
+	</tr>
+	<tr id="t-education">
+		<td>
+			<span class="label label-info">GET</span> <code>/api/education</code>
+		</td>
+		<td class="description">
+			Get information about my education.
+		</td>
+		<td>
+			<button class="btn btn-success" id="btn-education">Run!</button>
+		</td>
+	</tr>
+     </table>
+
+	<div class="api" id="employment">
+		<h2>Connect with me, and discover my professional experiences!</h2>
+		Use a websocket stream to get the complete list.<br><br><br>
+        	<button class="btn btn-large btn-success" id="btn-connect">Connect websocket!</button>
+	</div>
+	<div class="api" id="d-personal"></div>
+	<div class="api" id="d-skills"></div>
+	<div class="api" id="d-misc"></div>
+	<!-- WEBSOCKET TABLE -->
+      <table class="table table-striped websocket-table">
+	<tr id="t-personal">
+		<td>
+			<span class="label label-info">CALL</span> <code>GetPersonalProjects()</code>
+		</td>
+		<td class="description">
+			Returns a list of my personal projects.
+		</td>
+		<td>
+			<button class="btn btn-success" id="btn-personal">Run!</button>
+		</td>
+	</tr>
+	<tr id="t-skills">
+		<td>
+			<span class="label label-info">CALL</span> <code>GetSkills()</code>
+		</td>
+		<td class="description">
+			Get all the included features!
+		</td>
+		<td>
+			<button class="btn btn-success" id="btn-skills">Run!</button>
+		</td>
+	</tr>
+	<tr id="t-misc">
+		<td>
+			<span class="label label-info">CALL</span> <code>GetMiscellaneous()</code>
+		</td>
+		<td class="description">
+			Languages and interest.
+		</td>
+		<td>
+			<button class="btn btn-success" id="btn-misc">Run!</button>
+		</td>
+	</tr>
+     </table>
+
+
+
+      <div class="footer">
+        <p><a href="/">RESTFUL Curriculum Vitae</a> - &copy; <a href="mailto:henomis@gmail.com">Simone Vellei</a> 2015 </p>
+      </div>
+
+    </div> <!-- /container -->
+
+
+    <script src="js/jquery.js"></script>
+    <script src="js/jquerycolor.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="js/cv.js"></script>
+  </body>
+</html>
