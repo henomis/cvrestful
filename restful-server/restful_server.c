@@ -4,7 +4,13 @@
  */
 
 #include "fossa.h"
+#include "markdown.h"
+#include "html.h"
+#include "buffer.h"
 #include "restful_server.h"
+
+#define READ_UNIT 1024
+#define OUTPUT_UNIT 64
 
 static const char *s_http_port = "8000";
 static struct ns_serve_http_opts s_http_server_opts;
@@ -39,6 +45,48 @@ static void reply(struct ns_connection *nc, const char *msg, size_t len) {
 //  }
 }
 
+int parse_markdown(char *file, struct ns_connection *nc)
+{
+	struct buf *ib, *ob;
+	int ret;
+	FILE *in = fopen(file,"r");
+	if(!in)
+		return -1;
+
+	struct sd_callbacks callbacks;
+	struct html_renderopt options;
+	struct sd_markdown *markdown;
+
+	/* reading everything */
+	ib = bufnew(READ_UNIT);
+	bufgrow(ib, READ_UNIT);
+	while ((ret = fread(ib->data + ib->size, 1, ib->asize - ib->size, in)) > 0) {
+		ib->size += ret;
+		bufgrow(ib, ib->size + READ_UNIT);
+	}
+
+	if (in != stdin)
+		fclose(in);
+
+	/* performing markdown parsing */
+	ob = bufnew(OUTPUT_UNIT);
+
+	sdhtml_renderer(&callbacks, &options, 0);
+	markdown = sd_markdown_new(0, 16, &callbacks, &options);
+
+	sd_markdown_render(ob, ib->data, ib->size, markdown);
+	sd_markdown_free(markdown);
+
+	/* writing the result to stdout */
+	//ret = fwrite(ob->data, 1, ob->size, stdout);
+	ns_printf_http_chunk(nc, "%s", ob->data);
+
+	/* cleanup */
+	bufrelease(ib);
+	bufrelease(ob);
+
+	return 0;
+}
 static void handle_sum_call(struct ns_connection *nc,
 			    struct http_message *hm)
 {
@@ -93,6 +141,12 @@ static void ev_handler(struct ns_connection *nc, int ev, void *ev_data)
 				  "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
 			ns_printf_http_chunk(nc, "%s", json_education);
 			ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
+		} else if (ns_vcmp(&hm->uri, "/api/md") == 0) {
+			/* Send headers */
+			ns_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+			parse_markdown("md/example.md",nc);
+			//ns_printf_http_chunk(nc, "%s", json_education);
+			ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
 		} else {
 			ns_serve_http(nc, hm, s_http_server_opts);	/* Serve static content */
 		}
@@ -117,6 +171,8 @@ static void ev_handler(struct ns_connection *nc, int ev, void *ev_data)
 		break;
 	}
 }
+
+
 
 int main(int argc, char *argv[])
 {
