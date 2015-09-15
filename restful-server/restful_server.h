@@ -120,6 +120,6 @@ static const char *json_misc = "{
             } \
        ] \
     }, \
-    \"interest\": \"I love music in all its forms and expressions, I delight in playing clarinet, guitar and keyboards, and singing in a country band (<a target='_blank' href='http://markyjeans.wordpress.com'>Marky Jeans</a>). I like mountain hiking, jogging on the beach and picnics with my family. I spread the culture and ethics of Free Software organizing LinuxDay in my hometown since 2002 and designing computer labs in schools. I love to cook and experiment with ingredients, flavors and spices.\" \
+    \"interest\": \"I love music in all its forms and expressions, I delight in playing clarinet, guitar and keyboards, and singing in a country band (<a target='_blank' href='http://markyjeans.wordpress.com'>Marky Jeans</a>). I like riding mountain-bike and do Taijiquan. I like to spread the culture and ethics of Free Software organizing LinuxDay in my hometown since 2002 and designing computer labs in schools. I have a food blog <a target='_blank' href='http://www.grill4me.com'>Grill4me</a>, I like to grill and do BBQ with friends!\" \
 }";
 #endif
