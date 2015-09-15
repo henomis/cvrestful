@@ -36,8 +36,8 @@ function do_start()
 
 		$(".lead").html("");
 		$(".lead").append("<strong>Tel</strong>: " + obj.info.tel + "<br>");
-		$(".lead").append("<strong>E-mail</strong>: <a href='mailto:" + obj.info.email + "'>" + obj.info.email + "</a><br>");
-		$(".lead").append("<strong>Blog</strong>: <a href='" + obj.info.blog + "'>" + obj.info.blog + "</a>");
+		$(".lead").append("<strong>E-mail</strong>: <a target='_blank' href='mailto:" + obj.info.email + "'>" + obj.info.email + "</a><br>");
+		$(".lead").append("<strong>Blog</strong>: <a target='_blank' href='" + obj.info.blog + "'>" + obj.info.blog + "</a>");
 		$(".lead").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
 		$(".api-table").show();	
 		$("#howthis").show();
@@ -99,7 +99,7 @@ function do_profession()
 	
 }
 
-function do_education()
+function do_education_old()
 {
 
 	$.ajax({
@@ -124,6 +124,29 @@ function do_education()
 		$("#education").append(text);
 		$("#education").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
 		
+		$("#employment").show();
+	})
+	.fail(function() {
+		notify("GET /api/education",1);
+	});
+	
+}
+
+function do_education()
+{
+
+	$.ajax({
+		url: "/api/mdeducation",
+		cache: false
+		//dataType: "text"
+	}).done(function(obj) {
+
+		notify("GET /api/mdeducation",0);
+
+		$("#t-education").hide();
+
+		$("#education").html(obj);
+		$("#education").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
 		$("#employment").show();
 	})
 	.fail(function() {
