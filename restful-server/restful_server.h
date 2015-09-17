@@ -2,7 +2,17 @@
 #define _RESTFUL_H_
 
 
-static const char *json_info = "{ \"info\" : { \"tel\": \"+39.339.1298166\", \"email\": \"henomis@gmail.com\", \"blog\": \"http://henomis.wordpress.com\" } }";
+typedef enum {
+	CONTENT_JSON,
+	CONTENT_MARKDOWN
+} content_type_t;
+
+typedef enum {
+	MODE_REST,
+	MODE_WS
+} serving_type_t;
+
+
 static const char *json_person = "{ \"person\": {\"born\": \"November 7<sup>th</sup> 1979\", \"nationality\": \"Italian\", \"mstatus\": \"Married\"} }";
 static const char *json_profession = "{ \"profession\": {\"now\": \"GNU/Linux embedded system developer at <a href='http://www.inim.biz'>Inim Electronics</a>\"} }";
 static const char *json_education = "{\"education\": [{ \"date\":\"March 2014\", \"title\": \"Cloud Computing Concepts - University of Illinois at Urbana-Champaign (<a target='_blank' href='https://www.coursera.org/account/accomplishments/certificate/3TJ4EN23LX'>Certificate</a>) - Coursera.org\"},{ \"date\":\"Decembert 2014\", \"title\": \"Introduction to Electronics - Georgia Institute of Technology (<a target='_blank' href='https://www.coursera.org/account/accomplishments/certificate/3S93NKQBQ9'>Certificate</a>) - Coursera.org\"},{ \"date\":\"November 2014\", \"title\": \"Linear Circuits - Georgia Institute of Technology (<a target='_blank' href='https://www.coursera.org/account/accomplishments/certificate/H7GHHAQNH7'>Certificate</a>) - Coursera.org\"},{\"date\": \"March 2005\", \"title\": \"Master Degree in computer science at the Department of Computer Science, University of Bologna, Italy.\"}, {\"date\": \"1998\", \"title\": \"Diploma at “Liceo Statale B. Rossetti” in San Benedetto del Tronto, Italy.\"}]}";

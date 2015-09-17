@@ -19,33 +19,8 @@ static int is_websocket(const struct ns_connection *nc) {
   return nc->flags & NSF_IS_WEBSOCKET;
 }
 
-static void reply(struct ns_connection *nc, const char *msg, size_t len) {
-	struct ns_connection *c;
-	char buf[5000];
 
-
-	if(memcmp(msg,"hello",len) == 0) {
-		snprintf(buf, sizeof(buf), "hello to you!");
-	} else if(memcmp(msg,"GetEmployment",len) == 0) {
-		snprintf(buf, sizeof(buf), "%s",json_employment);
-	} else if(memcmp(msg,"GetPersonalProjects",len) == 0) {
-		snprintf(buf, sizeof(buf), "%s",json_personal);
-	} else if(memcmp(msg,"GetSkills",len) == 0) {
-		snprintf(buf, sizeof(buf), "%s",json_skills);
-	} else if(memcmp(msg,"GetMiscellaneous",len) == 0) {
-		snprintf(buf, sizeof(buf), "%s",json_misc);
-	} else {
-		snprintf(buf, sizeof(buf), "What?!");
-	}
-	
-	ns_send_websocket_frame(nc, WEBSOCKET_OP_TEXT, buf, strlen(buf));
-
-  //for (c = ns_next(nc->mgr, NULL); c != NULL; c = ns_next(nc->mgr, c)) {
-  //  ns_send_websocket_frame(nc, WEBSOCKET_OP_TEXT, buf, strlen(buf));
-//  }
-}
-
-int parse_markdown(char *file, struct ns_connection *nc)
+int send_markdown(char *file, struct ns_connection *nc, serving_type_t mode)
 {
 	struct buf *ib, *ob;
 	int ret;
@@ -65,8 +40,7 @@ int parse_markdown(char *file, struct ns_connection *nc)
 		bufgrow(ib, ib->size + READ_UNIT);
 	}
 
-	if (in != stdin)
-		fclose(in);
+	fclose(in);
 
 	/* performing markdown parsing */
 	ob = bufnew(OUTPUT_UNIT);
@@ -78,8 +52,65 @@ int parse_markdown(char *file, struct ns_connection *nc)
 	sd_markdown_free(markdown);
 
 	/* writing the result to stdout */
-	//ret = fwrite(ob->data, 1, ob->size, stdout);
-	ns_printf_http_chunk(nc, "%s", ob->data);
+	if(mode == MODE_REST) {
+		printf("SEND GET %s\n",file);
+		ns_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+		ns_printf_http_chunk(nc, "%s", ob->data);
+		ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
+	} else {
+		printf("SEND WS %s\n",file);
+
+		int to_alloc = ob->size + 1024;
+
+		char *json = malloc(to_alloc);
+		char *file2 = strdup(file);
+		memset (json, '\0', to_alloc);
+		strcat(json,"{\"");
+
+		// md/misc.md
+		char *ptr1 = strstr(file2,"/");
+		if(!ptr1) {
+			free(json);
+			free(file2);
+			return;
+		}
+		ptr1 += 1;
+
+		char *ptr2 = strstr(file2,".");
+		if(!ptr2) {
+			free(json);
+			free(file2);
+			return;
+		}
+		*ptr2 = '\0';
+
+		strcat(json,ptr1);
+		strcat(json,"\": \"");
+
+		ptr1 = ob->data;
+		int count = 0;
+		while(count < ob->size) {
+			if(*ptr1 == '\n') {
+				//strcat(json,"<br>");
+			} else if(*ptr1 == '"') {
+				strcat(json,"'");
+			} else {
+				memcpy(&json[strlen(json)],ptr1,1);
+			}
+			ptr1++;
+			count++;
+		}
+
+		//memcpy(&json[strlen(json)],ob->data,ob->size);
+		strcat(json,"\"}");
+		printf("%s\n",json);
+
+		ns_send_websocket_frame(nc, WEBSOCKET_OP_TEXT, json, strlen(json));
+
+		free(json);
+		free(file2);
+	}
+
 
 	/* cleanup */
 	bufrelease(ib);
@@ -87,24 +118,78 @@ int parse_markdown(char *file, struct ns_connection *nc)
 
 	return 0;
 }
-static void handle_sum_call(struct ns_connection *nc,
-			    struct http_message *hm)
+
+
+static void send_json(char *file, struct ns_connection *nc, serving_type_t mode)
 {
-	char n1[100], n2[100];
-	double result;
 
-	/* Get form variables */
-	ns_get_http_var(&hm->body, "n1", n1, sizeof(n1));
-	ns_get_http_var(&hm->body, "n2", n2, sizeof(n2));
 
-	/* Send headers */
-	ns_printf(nc, "%s",
-		  "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+#define READ_CHUNK (1024 * 1024)
+	char buffer[READ_CHUNK];
+	int ret = 0, sum = 0;
+	char *ptr = buffer;
 
-	/* Compute the result and send it back as a JSON object */
-	result = strtod(n1, NULL) + strtod(n2, NULL);
-	ns_printf_http_chunk(nc, "{ \"result\": %lf }", result);
-	ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
+
+	if(strstr(file,"..") != NULL)
+		return;
+
+	FILE *fp = fopen(file,"r");
+	if(!fp)
+		return;
+
+
+	if(mode == MODE_REST) {
+		printf("GET /api/%s\n",file);
+		ns_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+	} else {
+		printf("WS %s\n",file);
+	}
+
+
+	while((ret = fread(ptr,1,READ_CHUNK,fp)) != 0) {
+		ptr+=ret;
+		sum+=ret;
+	}
+
+
+	fclose(fp);
+
+
+	if(mode == MODE_REST) {
+		ns_send_http_chunk(nc,buffer,sum);
+		ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
+	} else {
+		ns_send_websocket_frame(nc, WEBSOCKET_OP_TEXT, buffer, sum);
+	}
+
+	return;
+
+}
+
+
+static void reply(struct ns_connection *nc, const char *msg, size_t len) {
+
+	char *str = (char*)malloc(len+ 1);
+
+	memset(str,'\0',len+1);
+	memcpy(str,msg,len);
+
+	if(strstr(str,"..") != NULL)
+		return;
+
+	if(strstr(str,"json/") != NULL) {
+		str = realloc(str,len + 1 + strlen(".json"));
+		strcat(str,".json");
+		send_json(str, nc, MODE_WS);
+	} else {
+
+		str = realloc(str,len + 1 + strlen(".md"));
+		strcat(str,".md");
+		send_markdown(str, nc, MODE_WS);
+	}
+	
+	free (str);
+
 }
 
 static void ev_handler(struct ns_connection *nc, int ev, void *ev_data)
@@ -112,45 +197,44 @@ static void ev_handler(struct ns_connection *nc, int ev, void *ev_data)
 	struct http_message *hm = (struct http_message *) ev_data;
 	struct websocket_message *wm =
 	    (struct websocket_message *) ev_data;
+	char *ptr;
 
 	switch (ev) {
 	case NS_HTTP_REQUEST:
-		if (ns_vcmp(&hm->uri, "/api/v1/sum") == 0) {
-			handle_sum_call(nc, hm);	/* Handle RESTful call */
-		} else if (ns_vcmp(&hm->uri, "/api/info") == 0) {
-			/* Send headers */
-			ns_printf(nc, "%s",
-				  "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-			ns_printf_http_chunk(nc, "%s", json_info);
-			ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
-		} else if (ns_vcmp(&hm->uri, "/api/person") == 0) {
-			/* Send headers */
-			ns_printf(nc, "%s",
-				  "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-			ns_printf_http_chunk(nc, "%s", json_person);
-			ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
-		} else if (ns_vcmp(&hm->uri, "/api/profession") == 0) {
-			/* Send headers */
-			ns_printf(nc, "%s",
-				  "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-			ns_printf_http_chunk(nc, "%s", json_profession);
-			ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
-		} else if (ns_vcmp(&hm->uri, "/api/education") == 0) {
-			/* Send headers */
-			ns_printf(nc, "%s",
-				  "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-			ns_printf_http_chunk(nc, "%s", json_education);
-			ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
-		} else if (ns_vcmp(&hm->uri, "/api/mdeducation") == 0) {
-			/* Send headers */
-			ns_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-			parse_markdown("md/education.md",nc);
-			//ns_printf_http_chunk(nc, "%s", json_education);
-			ns_send_http_chunk(nc, "", 0);	/* Send empty chunk, the end of response */
+
+		if((ptr = strstr(hm->uri.p,"/api/json/")) != NULL) {
+
+			char *ptr2 = strstr(ptr,"?");
+			ptr += strlen("/api/");
+
+			char *file = (char*) malloc(1024);
+			memset(file,'\0',1024);
+
+			memcpy(file,ptr,ptr2-ptr);
+			strcat(file,".json");
+
+			send_json(file, nc, MODE_REST);
+
+			free(file);
+
+		} else if((ptr = strstr(hm->uri.p,"/api/md/")) != NULL) {
+
+			char *ptr2 = strstr(ptr,"?");
+			ptr += strlen("/api/");
+
+			char *file = (char*) malloc(1024);
+			memset(file,'\0',1024);
+
+			memcpy(file,ptr,ptr2-ptr);
+			strcat(file,".md");
+
+			send_markdown(file, nc, MODE_REST);
+			free(file);
+
 		} else {
 			ns_serve_http(nc, hm, s_http_server_opts);	/* Serve static content */
 		}
-      		//nc->flags |= NSF_SEND_AND_CLOSE;
+
 		break;
 	case NS_WEBSOCKET_HANDSHAKE_DONE:
 		/* New websocket connection. Tell everybody. */
@@ -179,6 +263,11 @@ int main(int argc, char *argv[])
 	struct ns_mgr mgr;
 	struct ns_connection *nc;
 	int i;
+
+
+	/*printf("json_personal\n%s\n\n",json_personal);
+	printf("json_skills\n%s\n\n",json_skills);
+	printf("json_misc\n%s\n\n",json_misc);*/
 
 	ns_mgr_init(&mgr, NULL);
 	nc = ns_bind(&mgr, s_http_port, ev_handler);

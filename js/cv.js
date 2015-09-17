@@ -25,12 +25,12 @@ function do_start()
 {
 
 	$.ajax({
-		url: "/api/info",
+		url: "/api/json/info",
 		cache: false,
 		dataType: "json"
 	}).done(function(obj) {
 
-		notify("GET /api/info",0);
+		notify("GET /api/json/info",0);
 
 		$("#start").hide();
 
@@ -44,7 +44,7 @@ function do_start()
 		$("#howthis").addClass('howthis');
 	})
 	.fail(function() {
-		notify("GET /api/info",1);
+		notify("GET /api/json/info",1);
 	});
 	
 }
@@ -53,12 +53,12 @@ function do_person()
 {
 
 	$.ajax({
-		url: "/api/person",
+		url: "/api/json/person",
 		cache: false,
 		dataType: "json"
 	}).done(function(obj) {
 
-		notify("GET /api/person",0);
+		notify("GET /api/json/person",0);
 
 		$("#t-person").hide();
 
@@ -70,7 +70,7 @@ function do_person()
 		$("#person").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
 	})
 	.fail(function() {
-		notify("GET /api/person",1);
+		notify("GET /api/json/person",1);
 	});
 	
 }
@@ -79,12 +79,12 @@ function do_profession()
 {
 
 	$.ajax({
-		url: "/api/profession",
+		url: "/api/json/profession",
 		cache: false,
 		dataType: "json"
 	}).done(function(obj) {
 
-		notify("GET /api/profession",0);
+		notify("GET /api/json/profession",0);
 
 		$("#t-profession").hide();
 
@@ -94,54 +94,22 @@ function do_profession()
 		$("#profession").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
 	})
 	.fail(function() {
-		notify("GET /api/profession",1);
+		notify("GET /api/json/profession",1);
 	});
 	
 }
 
-function do_education_old()
-{
-
-	$.ajax({
-		url: "/api/education",
-		cache: false,
-		dataType: "json"
-	}).done(function(obj) {
-
-		notify("GET /api/education",0);
-
-		$("#t-education").hide();
-		$("#education").html("");
-
-		$("#education").append("<h2>Education:</h2>");
-	
-		var text = "<ul>";	
-		for(var k in obj.education) {
-			text += "<li><strong>" + obj.education[k].date + "</strong>: " + obj.education[k].title + "</li>";
-		}
-		text += "</ul>";
-
-		$("#education").append(text);
-		$("#education").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
-		
-		$("#employment").show();
-	})
-	.fail(function() {
-		notify("GET /api/education",1);
-	});
-	
-}
 
 function do_education()
 {
 
 	$.ajax({
-		url: "/api/mdeducation",
+		url: "/api/md/education",
 		cache: false
 		//dataType: "text"
 	}).done(function(obj) {
 
-		notify("GET /api/mdeducation",0);
+		notify("GET /api/md/education",0);
 
 		$("#t-education").hide();
 
@@ -150,7 +118,7 @@ function do_education()
 		$("#employment").show();
 	})
 	.fail(function() {
-		notify("GET /api/education",1);
+		notify("GET /api/md/education",1);
 	});
 	
 }
@@ -185,23 +153,8 @@ function do_employment(o)
 
 function do_personal(o)
 {
-	var text = "";
 
-	text += "<h2>Personal Projects:</h2>";
-	text+="<ul>";
-	for(var k in o) {
-
-		text+="<li><strong>" + o[k].title + "</strong></li>";
-		text+="<ul>";
-		for (var j in o[k].projects) {
-			text+="<li>" + o[k].projects[j] + "</li>";
-		}
-		text+="</ul>";
-
-	}
-	text+="</ul>";
-
-	$("#d-personal").html(text);
+	$("#d-personal").html(o);
 	$("#d-personal").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
 
 	$("#t-personal").hide();
@@ -210,23 +163,8 @@ function do_personal(o)
 
 function do_skills(o)
 {
-	var text = "";
 
-	text += "<h2>Skills:</h2>";
-	text+="<ul>";
-	for(var k in o) {
-
-		text+="<li><strong>" + o[k].title + "</strong></li>";
-		text+="<ul>";
-		for (var j in o[k].feat) {
-			text+="<li>" + o[k].feat[j] + "</li>";
-		}
-		text+="</ul>";
-
-	}
-	text+="</ul>";
-
-	$("#d-skills").html(text);
+	$("#d-skills").html(o);
 	$("#d-skills").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
 
 	$("#t-skills").hide();
@@ -235,22 +173,8 @@ function do_skills(o)
 
 function do_misc(o)
 {
-	var text = "";
 
-	text += "<h2>Languages:</h2>";
-	text+="<ul>";
-	var a = o.misc.languages;
-	for(var k in a) {
-
-		text+="<li><strong>" + a[k].title + "</strong>: " + a[k].value + "</li>";
-		text+="<ul>";
-		text+="</ul>";
-
-	}
-	text+="</ul>";
-	text+="<h2>Interest:</h2>" + o.interest;
-
-	$("#d-misc").html(text);
+	$("#d-misc").html(o);
 	$("#d-misc").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
 
 	$("#t-misc").hide();
@@ -263,7 +187,7 @@ function do_ws() {
 	ws = new WebSocket('ws://' + location.host + '/ws');
 
 
-	ws.onopen = function(ev)  { notify("Connecting to ws://" + location.host + "/ws",0); ws.send("GetEmployment");};
+	ws.onopen = function(ev)  { notify("Connecting to ws://" + location.host + "/ws",0); ws.send("json/employment");};
 	ws.onerror = function(ev) { notify("Connecting to ws://" + location.host + "/ws",1); };
 	ws.onclose = function(ev) {  };
 	ws.onmessage = function(ev) {
@@ -277,12 +201,12 @@ function do_ws() {
 
 		if(typeof(obj.employment) === 'object') {
 			do_employment(obj.employment);
-		} else if(typeof(obj.personal) === 'object') {
-			do_personal(obj.personal);
-		} else if(typeof(obj.skills) === 'object') {
+		} else if(obj.projects) {
+			do_personal(obj.projects);
+		} else if(obj.skills) {
 			do_skills(obj.skills);
-		} else if(typeof(obj.misc) === 'object') {
-			do_misc(obj);
+		} else if(obj.misc) {
+			do_misc(obj.misc);
 		} else {
 			alert("obj?");
 		}
@@ -295,17 +219,17 @@ function do_ws() {
 function do_howthis()
 {
 	$.ajax({
-		url: "/json/howthis.json",
+		url: "/api/json/howthis",
 		cache: false,
 		dataType: "json"
 	}).done(function(obj) {
 
-		notify("GET /json/howthis.json",0);
+		notify("GET /api/json/howthis",0);
 		$("#howthis-content").html(obj.text);
 		$("#howthis-info").show();
 	})
 	.fail(function() {
-		notify("GET /json/howthis.json",1);
+		notify("GET /api/json/howthis",1);
 	});
 	
 }
@@ -318,9 +242,9 @@ $( document ).ready(function() {
 	$("#btn-profession").click(function() {do_profession()});
 	$("#btn-education").click(function() {do_education()});
 	$("#btn-connect").click(function() {do_ws()});
-	$("#btn-personal").click(function() { ws.send("GetPersonalProjects")});
-	$("#btn-skills").click(function() { ws.send("GetSkills")});
-	$("#btn-misc").click(function() { ws.send("GetMisc")});
+	$("#btn-personal").click(function() { ws.send("md/projects")});
+	$("#btn-skills").click(function() { ws.send("md/skills")});
+	$("#btn-misc").click(function() { ws.send("md/misc")});
 	$("#howthis").click(function() { do_howthis()});
 	$("#howthis-close").click(function() { $("#howthis-info").hide()});
 });
