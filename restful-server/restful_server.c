@@ -87,8 +87,9 @@ int send_markdown(char *file, struct ns_connection *nc, serving_type_t mode)
 		strcat(json,ptr1);
 		strcat(json,"\": \"");
 
-		ptr1 = ob->data;
-		int count = 0;
+		ns_base64_encode(ob->data,ob->size,&json[strlen(json)]);
+		
+/*		int count = 0;
 		while(count < ob->size) {
 			if(*ptr1 == '\n') {
 				//strcat(json,"<br>");
@@ -99,11 +100,10 @@ int send_markdown(char *file, struct ns_connection *nc, serving_type_t mode)
 			}
 			ptr1++;
 			count++;
-		}
+		}*/
 
 		//memcpy(&json[strlen(json)],ob->data,ob->size);
 		strcat(json,"\"}");
-		printf("%s\n",json);
 
 		ns_send_websocket_frame(nc, WEBSOCKET_OP_TEXT, json, strlen(json));
 
