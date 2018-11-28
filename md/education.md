@@ -4,3 +4,4 @@
 * __November__ 2014: Linear Circuits - Georgia Institute of Technology ([Certificate](https://www.coursera.org/account/accomplishments/certificate/H7GHHAQNH7)) - Coursera.org
 * __March 2005__: Master Degree in computer science at the Department of Computer Science, University of Bologna, Italy.
 * __1998__: Diploma at “Liceo Statale B. Rossetti” in San Benedetto del Tronto, Italy.
+

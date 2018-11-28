@@ -50,6 +50,8 @@ int send_markdown(char *file, struct ns_connection *nc, serving_type_t mode)
 
 	sd_markdown_render(ob, ib->data, ib->size, markdown);
 	sd_markdown_free(markdown);
+		
+	ob->data[ob->size] = '\0';
 
 	/* writing the result to stdout */
 	if(mode == MODE_REST) {

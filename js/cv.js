@@ -70,6 +70,7 @@ function do_person()
 		$("#person").append("<ul><li><strong>Born</strong>: " + obj.person.born + "</li>" +
 		"<li><strong>Nationality</strong>: " + obj.person.nationality + "</li>" +
 		"<li><strong>Martial status</strong>: " + obj.person.mstatus + "</li></ul>");
+		$("#person").append("<img src='img/me.jpg' style='position: absolute; right: 0; top: 0; z-index: -1'/>");
 		$("#person").animate({ backgroundColor: "#DFF0D8" }, 1000 ).animate({ backgroundColor: "#ffffff" }, 1000 );
 	})
 	.fail(function() {
