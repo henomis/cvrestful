@@ -1,3 +1,5 @@
+⚠️ DEPRECATED - NOT MAINTAINED ⚠️
+
 # cvrestful
 My Curriculum Vitae
 
